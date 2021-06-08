@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.2124579326/PATH/delimiter=\:
+environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.2124579326/PATH/operation=replace
+environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.2124579326/PATH/value=/home/armin/RISCV/pulp-riscv-gnu-toolchain\:/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/usr/games\:/usr/local/games\:/snap/bin\:/home/armin/RISCV/riscv32-unknown-elf-gcc/bin
+environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.2124579326/append=true
+environment/project/ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.2124579326/appendContributed=true
