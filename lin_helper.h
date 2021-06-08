@@ -8,8 +8,17 @@
 #ifndef LIN_HELPER_H_
 #define LIN_HELPER_H_
 
+//! \include Board Settings Header file
+#include "board.h"
+
 //! \include Standard Integer Header File
 #include "fsl_lpuart.h"
+
+//! \include GPIO Header File
+#include "fsl_gpio.h"
+
+#define BOARD_GPIO_PORT BOARD_LED_RED_GPIO
+#define BOARD_GPIO_PIN BOARD_LED_RED_GPIO_PIN
 
 #define DEMO_LPUART LPUART0
 #define DEMO_LPUART_CLK_FREQ CLOCK_GetFreq(kCLOCK_ScgFircAsyncDiv2Clk)
@@ -21,6 +30,11 @@ uint8_t syncPayload[4] = { 0x00, 0x80, 0x55, 0x00 }; //!< Sync Break Payload
 #define HEADER_OFFSET 3
 //! \define Least Significant Byte Mask
 #define LSB_MASK 0x01
+
+//! \define Transceiver Sleep Mode
+#define SLEEP_MODE 0x00
+//! \define Transceiver Normal Mode
+#define NORMAL_MODE 0x01
 
 //!============================================================================
 
@@ -36,6 +50,7 @@ uint8_t readResponse(
 
 //!============================================================================
 
+void initializeGpio(void); //!< Initialize GPIO
 uint8_t applyParity(uint8_t id /*!< [in] Slave ID without Parity Bits */); //!< Apply Parity Bit on the Input ID
 uint8_t getBit(
 		uint8_t byte /*!< [in] Input Byte */,
@@ -47,7 +62,7 @@ uint8_t isValidParity(uint8_t id /*!< [in] Slave ID with Parity Bits */); //!< V
 uint8_t isValidChecksum(
 		uint8_t* data /*!< [in] Response Data including Checksum */,
 		size_t length /*!< [in] Data Length including Checksum */); //!< Validate Data Checksum
-void setSleepMode(uint8_t mode /*!< [in] Sleep Mode */); //!< Set Sleep Mode
+void setMode(uint8_t mode /*!< [in] Operation Mode */); //!< Set Transceiver Operation Mode
 
 //!============================================================================
 

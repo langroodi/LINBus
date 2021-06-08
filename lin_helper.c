@@ -17,16 +17,39 @@ void initializeLin(void) {
 
     LPUART_Init(DEMO_LPUART, &config, DEMO_LPUART_CLK_FREQ);
 
+    initializeGpio();
+
     uint8_t txbuff[] = "Initialization is done.\r\n";
     LPUART_WriteBlocking(DEMO_LPUART, txbuff, sizeof(txbuff) - 1);
 }
 
+void initializeGpio(void) {
+    // Define the initial state of the GPIO pin
+    gpio_pin_config_t _Ledconfig = {
+        kGPIO_DigitalOutput, 0,
+    };
+
+    // Initialize the GPIO pin
+    GPIO_PinInit(BOARD_GPIO_PORT, BOARD_GPIO_PIN, &_Ledconfig);
+}
+
 void writeHeader(uint8_t id) {
+	setMode(NORMAL_MODE);
 	LPUART_WriteBlocking(DEMO_LPUART, syncPayload, 1);
 	LPUART_WriteBlocking(DEMO_LPUART, syncPayload + 1, 1);
 	LPUART_WriteBlocking(DEMO_LPUART, syncPayload + 2, 1);
 	syncPayload[HEADER_OFFSET] = applyParity(id);
 	LPUART_WriteBlocking(DEMO_LPUART, syncPayload + HEADER_OFFSET, 1);
+	setMode(SLEEP_MODE);
+}
+
+void setMode(uint8_t mode) {
+	if (mode == SLEEP_MODE) {
+		GPIO_ClearPinsOutput(BOARD_GPIO_PORT, 1u << BOARD_GPIO_PIN);
+	}
+	else {
+		GPIO_SetPinsOutput(BOARD_GPIO_PORT, 1u << BOARD_GPIO_PIN);
+	}
 }
 
 uint8_t applyParity(uint8_t id) {

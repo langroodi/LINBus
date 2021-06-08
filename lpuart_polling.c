@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "board.h"
 #include "fsl_lpuart.h"
 
 #include "pin_mux.h"
@@ -30,7 +29,9 @@ int main(void)
 
     initializeLin();
 
+    writeHeader(0x11);
+
     while (1) {
-    	 asm("NOP");
+        asm("NOP");
     }
 }
