@@ -43,6 +43,48 @@ void writeHeader(uint8_t id) {
 	setMode(SLEEP_MODE);
 }
 
+ bool tryReadHeader(uint8_t* id) {
+	uint8_t _header[HEADER_SIZE];
+	status_t _status = LPUART_ReadBlocking(DEMO_LPUART, _header, HEADER_SIZE);
+
+	if (_status == SUCCESSFUL_STATUS) {
+		uint8_t _id = _header[HEADER_OFFSET];
+		bool _validParity = isValidParity(_id);
+
+		if (_validParity) {
+			*id = _id;
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void writeResponse(uint8_t* data, size_t length) {
+	setMode(NORMAL_MODE);
+	uint8_t _checksum = getChecksum(data, length);
+	LPUART_WriteBlocking(DEMO_LPUART, data, length);
+	LPUART_WriteBlocking(DEMO_LPUART, &_checksum, 1);
+	setMode(SLEEP_MODE);
+}
+
+uint8_t getChecksum(uint8_t* data, size_t length) {
+	uint8_t _result = 0;
+	for (size_t i = 0; i < length; i++) {
+		_result += data[i];
+	}
+
+	return ~_result;
+}
+
+bool isValidParity(uint8_t id) {
+	uint8_t _expectedId = applyParity(id);
+	bool _result = _expectedId == id;
+
+	return _result;
+}
+
 void setMode(uint8_t mode) {
 	if (mode == SLEEP_MODE) {
 		GPIO_ClearPinsOutput(BOARD_GPIO_PORT, 1u << BOARD_GPIO_PIN);

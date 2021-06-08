@@ -26,8 +26,10 @@
 
 uint8_t syncPayload[4] = { 0x00, 0x80, 0x55, 0x00 }; //!< Sync Break Payload
 
+//! \define LIN Header Size
+#define HEADER_SIZE 4
 //! \define LIN Header Offset from the Sync Break Payload
-#define HEADER_OFFSET 3
+#define HEADER_OFFSET HEADER_SIZE - 1
 //! \define Least Significant Byte Mask
 #define LSB_MASK 0x01
 
@@ -36,11 +38,14 @@ uint8_t syncPayload[4] = { 0x00, 0x80, 0x55, 0x00 }; //!< Sync Break Payload
 //! \define Transceiver Normal Mode
 #define NORMAL_MODE 0x01
 
+//! \define LPUART Reading Successful Status
+#define SUCCESSFUL_STATUS 0
+
 //!============================================================================
 
 void initializeLin(void); //!< Initialize
 void writeHeader(uint8_t id /*!< [in] Slave ID */); //!< Write Header on the Bus
-uint8_t readHeader(); //!< Read Header from the Bus
+bool tryReadHeader(uint8_t* id /*!< [out] Header ID */); //!< Try to Read Header from the Bus
 void writeResponse(
 		uint8_t* data /*!< [in] Response Data */,
 		size_t length /*!< [in] Data Length */); //!< Write Response on the Bus
@@ -58,8 +63,8 @@ uint8_t getBit(
 uint8_t getChecksum(
 		uint8_t* data /*!< [in] Response Data */,
 		size_t length /*!< [in] Data Length */); //!< Compute Checksum based on the Input Data
-uint8_t isValidParity(uint8_t id /*!< [in] Slave ID with Parity Bits */); //!< Validate ID Parity
-uint8_t isValidChecksum(
+bool isValidParity(uint8_t id /*!< [in] Slave ID with Parity Bits */); //!< Validate ID Parity
+bool isValidChecksum(
 		uint8_t* data /*!< [in] Response Data including Checksum */,
 		size_t length /*!< [in] Data Length including Checksum */); //!< Validate Data Checksum
 void setMode(uint8_t mode /*!< [in] Operation Mode */); //!< Set Transceiver Operation Mode
