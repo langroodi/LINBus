@@ -20,11 +20,13 @@
 #define BOARD_GPIO_PORT BOARD_LED_RED_GPIO
 #define BOARD_GPIO_PIN BOARD_LED_RED_GPIO_PIN
 
-#define DEMO_LPUART LPUART0
-#define DEMO_LPUART_CLK_FREQ CLOCK_GetFreq(kCLOCK_ScgFircAsyncDiv2Clk)
-#define DEFAULT_UART_BAUDRATE 115200U
+#define DEBUG_LPUART LPUART0
+#define DEBUG_UART_BAUDRATE 115200U
+#define BOARD_LPUART LPUART1
+#define BOARD_UART_BAUDRATE 19200U
+#define LPUART_CLK_FREQ CLOCK_GetFreq(kCLOCK_ScgFircAsyncDiv2Clk)
 
-uint8_t syncPayload[4] = { 0x00, 0x80, 0x55, 0x00 }; //!< Sync Break Payload
+uint8_t syncPayload[3] = { 0x00, 0x80, 0x55 }; //!< Sync Break Payload
 
 //! \define LIN Header Size
 #define HEADER_SIZE 4
@@ -49,9 +51,9 @@ bool tryReadHeader(uint8_t* id /*!< [out] Header ID */); //!< Try to Read Header
 void writeResponse(
 		uint8_t* data /*!< [in] Response Data */,
 		size_t length /*!< [in] Data Length */); //!< Write Response on the Bus
-uint8_t readResponse(
+bool tryReadResponse(
 		uint8_t* data /*!< [out] Response Data */,
-		size_t length /*!< [in] Data Length */); //!< Read Response from the Bus
+		size_t length /*!< [in] Data Length */); //!< Try to Read Response from the Bus
 
 //!============================================================================
 
@@ -65,8 +67,9 @@ uint8_t getChecksum(
 		size_t length /*!< [in] Data Length */); //!< Compute Checksum based on the Input Data
 bool isValidParity(uint8_t id /*!< [in] Slave ID with Parity Bits */); //!< Validate ID Parity
 bool isValidChecksum(
-		uint8_t* data /*!< [in] Response Data including Checksum */,
-		size_t length /*!< [in] Data Length including Checksum */); //!< Validate Data Checksum
+		uint8_t* data /*!< [in] Response Data excluding Checksum */,
+		size_t length /*!< [in] Data Length excluding Checksum */,
+		uint8_t checksum /*!< [in] Received Checksum*/); //!< Validate Data Checksum
 void setMode(uint8_t mode /*!< [in] Operation Mode */); //!< Set Transceiver Operation Mode
 
 //!============================================================================

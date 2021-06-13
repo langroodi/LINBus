@@ -50,7 +50,7 @@
 
 /* Board led color mapping */
 #define BOARD_LED_RED_GPIO GPIOA
-#define BOARD_LED_RED_GPIO_PIN 24U
+#define BOARD_LED_RED_GPIO_PIN 30U
 
 /*! @brief The TPM channel used for board */
 #define BOARD_TPM_CHANNEL 0U

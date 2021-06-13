@@ -11,41 +11,41 @@
 void initializeLin(void) {
     lpuart_config_t config;
     LPUART_GetDefaultConfig(&config);
-    config.baudRate_Bps = DEFAULT_UART_BAUDRATE;
+    config.baudRate_Bps = DEBUG_UART_BAUDRATE;
     config.enableTx = true;
     config.enableRx = true;
 
-    LPUART_Init(DEMO_LPUART, &config, DEMO_LPUART_CLK_FREQ);
+    LPUART_Init(DEBUG_LPUART, &config, LPUART_CLK_FREQ);
 
     initializeGpio();
 
     uint8_t txbuff[] = "Initialization is done.\r\n";
-    LPUART_WriteBlocking(DEMO_LPUART, txbuff, sizeof(txbuff) - 1);
+    LPUART_WriteBlocking(DEBUG_LPUART, txbuff, sizeof(txbuff) - 1);
 }
 
 void initializeGpio(void) {
     // Define the initial state of the GPIO pin
-    gpio_pin_config_t _Ledconfig = {
+    gpio_pin_config_t _ledConfig = {
         kGPIO_DigitalOutput, 0,
     };
 
     // Initialize the GPIO pin
-    GPIO_PinInit(BOARD_GPIO_PORT, BOARD_GPIO_PIN, &_Ledconfig);
+    GPIO_PinInit(BOARD_GPIO_PORT, BOARD_GPIO_PIN, &_ledConfig);
 }
 
 void writeHeader(uint8_t id) {
 	setMode(NORMAL_MODE);
-	LPUART_WriteBlocking(DEMO_LPUART, syncPayload, 1);
-	LPUART_WriteBlocking(DEMO_LPUART, syncPayload + 1, 1);
-	LPUART_WriteBlocking(DEMO_LPUART, syncPayload + 2, 1);
-	syncPayload[HEADER_OFFSET] = applyParity(id);
-	LPUART_WriteBlocking(DEMO_LPUART, syncPayload + HEADER_OFFSET, 1);
+	LPUART_WriteBlocking(DEBUG_LPUART, syncPayload, 1);
+	LPUART_WriteBlocking(DEBUG_LPUART, syncPayload + 1, 1);
+	LPUART_WriteBlocking(DEBUG_LPUART, syncPayload + 2, 1);
+	id = applyParity(id);
+	LPUART_WriteBlocking(DEBUG_LPUART, &id, 1);
 	setMode(SLEEP_MODE);
 }
 
- bool tryReadHeader(uint8_t* id) {
+bool tryReadHeader(uint8_t* id) {
 	uint8_t _header[HEADER_SIZE];
-	status_t _status = LPUART_ReadBlocking(DEMO_LPUART, _header, HEADER_SIZE);
+	status_t _status = LPUART_ReadBlocking(DEBUG_LPUART, _header, HEADER_SIZE);
 
 	if (_status == SUCCESSFUL_STATUS) {
 		uint8_t _id = _header[HEADER_OFFSET];
@@ -64,9 +64,33 @@ void writeHeader(uint8_t id) {
 void writeResponse(uint8_t* data, size_t length) {
 	setMode(NORMAL_MODE);
 	uint8_t _checksum = getChecksum(data, length);
-	LPUART_WriteBlocking(DEMO_LPUART, data, length);
-	LPUART_WriteBlocking(DEMO_LPUART, &_checksum, 1);
+	LPUART_WriteBlocking(DEBUG_LPUART, data, length);
+	LPUART_WriteBlocking(DEBUG_LPUART, &_checksum, 1);
 	setMode(SLEEP_MODE);
+}
+
+bool tryReadResponse(uint8_t* data, size_t length) {
+	status_t _status = LPUART_ReadBlocking(DEBUG_LPUART, data, length);
+
+	/*! \if The data payload successfully received
+	 * 		Receive checksum
+	 * 		\if The checksum successfully received
+	 * 			Validate checksum
+	 * 		\endif
+	 * 	\endif
+	 */
+	if (_status == SUCCESSFUL_STATUS) {
+		uint8_t _checksum;
+		_status = LPUART_ReadBlocking(DEBUG_LPUART, &_checksum, 1);
+
+		if (_status == SUCCESSFUL_STATUS) {
+			bool _validChecksum = isValidChecksum(data, length, _checksum);
+
+			return _validChecksum;
+		}
+	}
+
+	return false;
 }
 
 uint8_t getChecksum(uint8_t* data, size_t length) {
@@ -81,6 +105,13 @@ uint8_t getChecksum(uint8_t* data, size_t length) {
 bool isValidParity(uint8_t id) {
 	uint8_t _expectedId = applyParity(id);
 	bool _result = _expectedId == id;
+
+	return _result;
+}
+
+bool isValidChecksum(uint8_t* data, size_t length, uint8_t checksum) {
+	uint8_t _expectedChecksum = getChecksum(data, length);
+	bool _result = _expectedChecksum == checksum;
 
 	return _result;
 }
